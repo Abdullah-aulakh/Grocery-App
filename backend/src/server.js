@@ -4,27 +4,32 @@ import pool from "./config/db.js";
 
 // Routes
 import userRoutes from "./routes/userRoutes.js";
-import productRoutes from "./routes/productRoutes.js";
-import cartRoutes from "./routes/cartRoutes.js";
+import basketRoutes from "./routes/basketRoutes.js";
 
 // DB Setup
 import { createUserTable } from "./data/createUserTable.js";
-import { createProductTable } from "./data/createProducttable.js";
-import { createCartTable } from "./data/createCartTable.js";
-
+import { createBasketItemsTable } from "./data/createBasketItemsTable.js";
+import {errorHandler,userValidator} from "./middleware/server.js";
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 5000;
 
 // Middleware
 app.use(express.json());
 
-// Routes
-app.use("/api/users", userRoutes);
-app.use("/api/products", productRoutes);
-app.use("/api/cart", cartRoutes);
+// Initialize DB tables
+createUserTable();
+createBasketItemsTable();
 
+
+
+// Routes
+app.use("/api/users", userValidator,userRoutes);
+app.use("/api/basket", basketRoutes);
+
+
+app.use(errorHandler);
 // Root route
 app.get("/", (req, res) => {
   res.status(200).send("Hello World!");
@@ -44,10 +49,7 @@ app.get("/checkdb", async (req, res) => {
   }
 });
 
-// Initialize DB tables
-createUserTable();
-createCartTable();
-createProductTable();
+
 
 app.listen(port, () => {
   console.log(`✅ Server running on port ${port}`);
